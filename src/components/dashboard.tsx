@@ -13,6 +13,7 @@ import {
   Pencil,
   Plus,
   Printer,
+  RefreshCw,
   Search,
   ShieldAlert,
   Target,
@@ -21,7 +22,15 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import { Brand } from "@/components/brand";
-import type { PortfolioSnapshot, Project, ProjectHealth, ProjectPriority } from "@/lib/types";
+import type {
+  MilestoneStatus,
+  PortfolioSnapshot,
+  Project,
+  ProjectHealth,
+  ProjectMilestone,
+  ProjectPriority,
+  ProjectUpdate,
+} from "@/lib/types";
 
 const STORAGE_KEY = "rv6-project-command-v1";
 
@@ -37,6 +46,14 @@ const healthLabel: Record<ProjectHealth, string> = {
   attention: "Needs attention",
   blocked: "Blocked",
   planning: "Planning",
+};
+
+type ProjectEditInput = Pick<
+  Project,
+  "progress" | "health" | "status" | "priority" | "phase" | "owner" | "targetDate" | "nextAction" | "blocker"
+> & {
+  milestones: Array<Pick<ProjectMilestone, "id" | "progress" | "status">>;
+  update: Pick<ProjectUpdate, "title" | "body" | "type">;
 };
 
 function initials(value: string) {
@@ -69,6 +86,7 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
   const [editProject, setEditProject] = useState<Project | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (snapshot.dataMode === "demo") {
@@ -100,6 +118,16 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
   }, [toast]);
 
   const selectedProject = projects.find((project) => project.id === selectedId) ?? null;
+
+  useEffect(() => {
+    if (!selectedProject && !showAdd && !showBossView && !editProject) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [editProject, selectedProject, showAdd, showBossView]);
+
   const overall = projects.length
     ? Math.round(projects.reduce((sum, project) => sum + project.progress, 0) / projects.length)
     : 0;
@@ -186,12 +214,46 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
     showToast(result.persisted ? "Project saved to Neon." : "Project saved to this browser in demo mode.");
   }
 
-  async function updateProject(id: string, changes: Pick<Project, "progress" | "status" | "nextAction" | "blocker">) {
+  async function refreshProjects() {
+    setRefreshing(true);
+    try {
+      const response = await fetch("/api/projects", { cache: "no-store" });
+      if (!response.ok) throw new Error("Refresh failed");
+      const result = await response.json() as PortfolioSnapshot;
+      if (result.dataMode !== "neon") {
+        showToast("Demo mode is using this browser's saved project data.");
+        return;
+      }
+      setProjects(result.projects);
+      showToast("Portfolio refreshed from Neon.");
+    } catch {
+      showToast("The latest portfolio data could not be loaded.");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  async function updateProject(id: string, changes: ProjectEditInput) {
     const original = projects.find((project) => project.id === id);
     if (!original) return;
     const updatedAt = new Date().toISOString().slice(0, 10);
+    const pendingUpdate: ProjectUpdate = {
+      id: `pending-${crypto.randomUUID()}`,
+      date: updatedAt,
+      ...changes.update,
+    };
     setProjects((current) => current.map((project) => project.id === id
-      ? { ...project, ...changes, progressLabel: snapshot.dataMode === "neon" ? "Manual update" : "Local update", lastUpdated: updatedAt }
+      ? {
+          ...project,
+          ...changes,
+          milestones: project.milestones.map((milestone) => {
+            const changed = changes.milestones.find((item) => item.id === milestone.id);
+            return changed ? { ...milestone, ...changed } : milestone;
+          }),
+          updates: [pendingUpdate, ...project.updates],
+          progressLabel: snapshot.dataMode === "neon" ? "Manual update" : "Local update",
+          lastUpdated: updatedAt,
+        }
       : project));
 
     try {
@@ -200,13 +262,23 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(changes),
       });
-      if (!response.ok) throw new Error("Update failed");
       const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Update failed");
+      setProjects((current) => current.map((project) => project.id === id
+        ? {
+            ...project,
+            progressLabel: result.persisted ? "Manual update" : "Local update",
+            updates: project.updates.map((update) => update.id === pendingUpdate.id
+              ? { ...pendingUpdate, id: result.update?.id ?? pendingUpdate.id }
+              : update),
+          }
+        : project));
       showToast(result.persisted ? "Project update saved to Neon." : "Project update saved locally.");
       setEditProject(null);
-    } catch {
+    } catch (reason) {
       setProjects((current) => current.map((project) => project.id === id ? original : project));
-      showToast("The update could not be saved. Your previous values were restored.");
+      showToast(reason instanceof Error ? reason.message : "The update could not be saved. Your previous values were restored.");
+      throw reason;
     }
   }
 
@@ -266,6 +338,9 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
             />
           </div>
           <div className="top-actions">
+            <button className="button secondary" type="button" aria-label="Refresh portfolio data" disabled={refreshing} onClick={refreshProjects}>
+              <RefreshCw className={refreshing ? "spin" : ""} /> <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
+            </button>
             <button className="button secondary" type="button" aria-label="Open boss view" onClick={() => setShowBossView(true)}>
               <Printer /> <span>Boss view</span>
             </button>
@@ -620,37 +695,114 @@ function AddProjectModal({ onClose, onSubmit }: {
 function EditProjectModal({ project, onClose, onSubmit }: {
   project: Project;
   onClose: () => void;
-  onSubmit: (changes: Pick<Project, "progress" | "status" | "nextAction" | "blocker">) => Promise<void>;
+  onSubmit: (changes: ProjectEditInput) => Promise<void>;
 }) {
   const [progress, setProgress] = useState(project.progress);
+  const [milestoneDrafts, setMilestoneDrafts] = useState(
+    project.milestones.map((milestone) => ({
+      id: milestone.id,
+      title: milestone.title,
+      progress: milestone.progress,
+      status: milestone.status,
+    })),
+  );
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  function updateMilestone(id: string, changes: Partial<Pick<ProjectMilestone, "progress" | "status">>) {
+    setMilestoneDrafts((current) => current.map((milestone) => {
+      if (milestone.id !== id) return milestone;
+      const next = { ...milestone, ...changes };
+      if (changes.status === "complete") next.progress = 100;
+      if (changes.progress === 100) next.status = "complete";
+      if (changes.progress !== undefined && changes.progress < 100 && next.status === "complete") next.status = "in-progress";
+      return next;
+    }));
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     setSaving(true);
-    await onSubmit({
-      progress,
-      status: String(data.get("status")),
-      nextAction: String(data.get("nextAction")),
-      blocker: String(data.get("blocker")),
-    });
+    setError("");
+    try {
+      await onSubmit({
+        progress,
+        health: String(data.get("health")) as ProjectHealth,
+        status: String(data.get("status")),
+        priority: String(data.get("priority")) as ProjectPriority,
+        phase: String(data.get("phase")),
+        owner: String(data.get("owner")),
+        targetDate: String(data.get("targetDate")) || undefined,
+        nextAction: String(data.get("nextAction")),
+        blocker: String(data.get("blocker")),
+        milestones: milestoneDrafts.map(({ id, progress: milestoneProgress, status }) => ({ id, progress: milestoneProgress, status })),
+        update: {
+          title: String(data.get("updateTitle")),
+          body: String(data.get("updateBody")),
+          type: String(data.get("updateType")) as ProjectUpdate["type"],
+        },
+      });
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The project update could not be saved.");
+      setSaving(false);
+    }
   }
 
   return (
     <div className="modal-backdrop">
-      <form className="modal" onSubmit={submit}>
+      <form className="modal update-modal" onSubmit={submit}>
         <div className="modal-header">
-          <div><h2>Update {project.shortName}</h2><p>Keep the percentage defensible by updating the next action and blocker at the same time.</p></div>
+          <div><h2>Update {project.shortName}</h2><p>Record the operating facts, completed action items, and evidence behind this status change.</p></div>
           <button className="close-button" type="button" onClick={onClose} aria-label="Close project update"><X /></button>
         </div>
-        <div className="form-grid">
-          <div className="field full"><label htmlFor="edit-status">CURRENT STATUS</label><input id="edit-status" name="status" defaultValue={project.status} required /></div>
-          <div className="field full"><label htmlFor="edit-next">NEXT ACTION</label><textarea id="edit-next" name="nextAction" defaultValue={project.nextAction} required /></div>
-          <div className="field full"><label htmlFor="edit-blocker">ACTIVE BLOCKER</label><textarea id="edit-blocker" name="blocker" defaultValue={project.blocker} /></div>
-          <div className="field full"><label htmlFor="edit-progress">OVERALL COMPLETION</label><div className="range-row"><input id="edit-progress" type="range" min="0" max="100" value={progress} onChange={(event) => setProgress(Number(event.target.value))} /><span className="range-value">{progress}%</span></div></div>
+
+        <section className="form-section">
+          <div className="form-section-heading"><div><h3>Delivery status</h3><p>Keep the executive summary and ownership current.</p></div><span className="mini-label">REQUIRED</span></div>
+          <div className="form-grid compact">
+            <div className="field full"><label htmlFor="edit-progress">OVERALL COMPLETION</label><div className="range-row"><input id="edit-progress" type="range" min="0" max="100" value={progress} onChange={(event) => setProgress(Number(event.target.value))} /><span className="range-value">{progress}%</span></div></div>
+            <div className="field"><label htmlFor="edit-health">HEALTH</label><select id="edit-health" name="health" defaultValue={project.health}><option value="on-track">On track</option><option value="attention">Needs attention</option><option value="blocked">Blocked</option><option value="planning">Planning</option></select></div>
+            <div className="field"><label htmlFor="edit-priority">PRIORITY</label><select id="edit-priority" name="priority" defaultValue={project.priority}><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+            <div className="field"><label htmlFor="edit-status">CURRENT STATUS</label><input id="edit-status" name="status" defaultValue={project.status} required /></div>
+            <div className="field"><label htmlFor="edit-phase">PHASE</label><input id="edit-phase" name="phase" defaultValue={project.phase} required /></div>
+            <div className="field"><label htmlFor="edit-owner">OWNER</label><input id="edit-owner" name="owner" defaultValue={project.owner} required /></div>
+            <div className="field"><label htmlFor="edit-target">TARGET DATE</label><input id="edit-target" name="targetDate" type="date" defaultValue={project.targetDate ?? ""} /></div>
+            <div className="field full"><label htmlFor="edit-next">NEXT ACTION</label><textarea id="edit-next" name="nextAction" defaultValue={project.nextAction} required /></div>
+            <div className="field full"><label htmlFor="edit-blocker">ACTIVE BLOCKER</label><textarea id="edit-blocker" name="blocker" defaultValue={project.blocker} placeholder="No active blocker" /></div>
+          </div>
+        </section>
+
+        {milestoneDrafts.length > 0 && (
+          <section className="form-section">
+            <div className="form-section-heading"><div><h3>Action items & milestones</h3><p>Mark completed work here so the detailed plan stays synchronized.</p></div><span className="mini-label">{milestoneDrafts.length} ITEMS</span></div>
+            <div className="milestone-edit-list">
+              {milestoneDrafts.map((milestone) => (
+                <div className="milestone-edit-row" key={milestone.id}>
+                  <div className="milestone-edit-title"><strong>{milestone.title}</strong><span>{milestone.progress}% complete</span></div>
+                  <select aria-label={`${milestone.title} status`} value={milestone.status} onChange={(event) => updateMilestone(milestone.id, { status: event.target.value as MilestoneStatus })}>
+                    <option value="pending">Pending</option><option value="in-progress">In progress</option><option value="complete">Complete</option><option value="blocked">Blocked</option><option value="deferred">Deferred</option>
+                  </select>
+                  <input aria-label={`${milestone.title} progress`} type="number" min="0" max="100" value={milestone.progress} onChange={(event) => updateMilestone(milestone.id, { progress: Math.min(100, Math.max(0, Number(event.target.value))) })} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="form-section evidence-section">
+          <div className="form-section-heading"><div><h3>Update record</h3><p>This note appears in the project timeline and keeps the percentage defensible.</p></div><span className="mini-label">EVIDENCE</span></div>
+          <div className="form-grid compact">
+            <div className="field"><label htmlFor="edit-update-title">UPDATE TITLE</label><input id="edit-update-title" name="updateTitle" defaultValue={`${project.shortName} status updated`} required minLength={3} /></div>
+            <div className="field"><label htmlFor="edit-update-type">UPDATE TYPE</label><select id="edit-update-type" name="updateType" defaultValue="progress"><option value="progress">Progress</option><option value="decision">Decision</option><option value="blocker">Blocker</option><option value="approval">Approval</option></select></div>
+            <div className="field full"><label htmlFor="edit-update-body">WHAT CHANGED / SUPPORTING EVIDENCE</label><textarea id="edit-update-body" name="updateBody" required minLength={3} placeholder="Describe what was completed, verified, decided, or newly blocked." /></div>
+          </div>
+        </section>
+
+        {error && <div className="form-error">{error}</div>}
+        <div className="modal-actions sticky-actions">
+          <button className="button secondary" type="button" onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="button primary" disabled={saving} type="submit"><Check /> {saving ? "Saving…" : "Save project update"}</button>
         </div>
-        <div className="modal-actions"><button className="button secondary" type="button" onClick={onClose}>Cancel</button><button className="button primary" disabled={saving} type="submit"><Check /> {saving ? "Saving…" : "Save update"}</button></div>
       </form>
     </div>
   );
