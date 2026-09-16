@@ -675,10 +675,10 @@ function BossReport({ projects, overall, asOf, onClose }: { projects: Project[];
             <tbody>
               {projects.map((project) => (
                 <tr key={project.id}>
-                  <td>{project.name}<br /><span style={{ color: "#a1a1aa", fontWeight: 500 }}>{project.owner}</span></td>
-                  <td><div className="boss-progress"><strong>{project.progress}%</strong><div className="micro-bar"><span style={{ width: `${project.progress}%`, background: project.accent }} /></div></div></td>
-                  <td><span className={`status-pill ${project.health}`}>{project.status}</span></td>
-                  <td>{project.nextAction}</td>
+                  <td data-label="Project">{project.name}<br /><span style={{ color: "#a1a1aa", fontWeight: 500 }}>{project.owner}</span></td>
+                  <td data-label="Progress"><div className="boss-progress"><strong>{project.progress}%</strong><div className="micro-bar"><span style={{ width: `${project.progress}%`, background: project.accent }} /></div></div></td>
+                  <td data-label="Status"><span className={`status-pill ${project.health}`}>{project.status}</span></td>
+                  <td data-label="Immediate next action">{project.nextAction}</td>
                 </tr>
               ))}
             </tbody>
