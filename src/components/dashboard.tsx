@@ -779,10 +779,16 @@ function EditProjectModal({ project, onClose, onSubmit }: {
               {milestoneDrafts.map((milestone) => (
                 <div className="milestone-edit-row" key={milestone.id}>
                   <div className="milestone-edit-title"><strong>{milestone.title}</strong><span>{milestone.progress}% complete</span></div>
-                  <select aria-label={`${milestone.title} status`} value={milestone.status} onChange={(event) => updateMilestone(milestone.id, { status: event.target.value as MilestoneStatus })}>
-                    <option value="pending">Pending</option><option value="in-progress">In progress</option><option value="complete">Complete</option><option value="blocked">Blocked</option><option value="deferred">Deferred</option>
-                  </select>
-                  <input aria-label={`${milestone.title} progress`} type="number" min="0" max="100" value={milestone.progress} onChange={(event) => updateMilestone(milestone.id, { progress: Math.min(100, Math.max(0, Number(event.target.value))) })} />
+                  <div className="milestone-edit-controls">
+                    <select aria-label={`${milestone.title} status`} value={milestone.status} onChange={(event) => updateMilestone(milestone.id, { status: event.target.value as MilestoneStatus })}>
+                      <option value="pending">Pending</option><option value="in-progress">In progress</option><option value="complete">Complete</option><option value="blocked">Blocked</option><option value="deferred">Deferred</option>
+                    </select>
+                    <div className="milestone-slider-row">
+                      <input id={`${milestone.id}-progress`} className="milestone-slider" aria-label={`${milestone.title} progress`} type="range" min="0" max="100" value={milestone.progress} onChange={(event) => updateMilestone(milestone.id, { progress: Number(event.target.value) })} />
+                      <output className="range-value" htmlFor={`${milestone.id}-progress`}>{milestone.progress}%</output>
+                    </div>
+                    <div className="milestone-progress-track" aria-hidden="true"><span style={{ width: `${milestone.progress}%` }} /></div>
+                  </div>
                 </div>
               ))}
             </div>

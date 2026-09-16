@@ -359,6 +359,27 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
 .range-row { display: flex; align-items: center; gap: 12px; }
 .range-row input { padding: 0; accent-color: var(--red); }
 .range-value { width: 45px; color: var(--red); font-size: 13px; font-weight: 850; text-align: right; }
+.update-modal { width: min(720px, 100%); }
+.form-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid #ececef; }
+.form-section:first-of-type { margin-top: 20px; padding-top: 0; border-top: 0; }
+.form-section-heading { display: flex; align-items: start; justify-content: space-between; gap: 16px; }
+.form-section-heading h3 { margin: 0; color: #27272a; font-size: 14px; line-height: 1.25; letter-spacing: -.02em; }
+.form-section-heading p { margin: 4px 0 0; color: #8a8a92; font-size: 10px; line-height: 1.45; }
+.form-grid.compact { margin-top: 15px; }
+.milestone-edit-list { display: grid; gap: 10px; margin-top: 15px; }
+.milestone-edit-row { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 16px; align-items: center; padding: 13px 0; border-top: 1px solid #f0f0f2; }
+.milestone-edit-row:first-child { border-top: 0; padding-top: 0; }
+.milestone-edit-title { min-width: 0; }
+.milestone-edit-title strong { display: block; overflow: hidden; color: #27272a; font-size: 11px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.milestone-edit-title span { display: block; margin-top: 4px; color: #a1a1aa; font-size: 9px; }
+.milestone-edit-controls { min-width: 0; }
+.milestone-edit-controls select { width: 100%; border: 1px solid #d4d4d8; border-radius: 8px; padding: 7px 9px; color: #3f3f46; background: #fff; font-size: 10px; }
+.milestone-slider-row { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
+.milestone-slider { width: 100%; min-width: 0; height: 5px; accent-color: var(--red); cursor: pointer; }
+.milestone-slider-row .range-value { flex: 0 0 38px; width: auto; font-size: 11px; }
+.milestone-progress-track { height: 4px; margin-top: 8px; overflow: hidden; border-radius: 99px; background: #ececef; }
+.milestone-progress-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--red), #f06a70); transition: width .18s ease; }
+.sticky-actions { position: sticky; bottom: -24px; margin-inline: -24px; padding: 14px 24px 0; background: rgba(255,255,255,.94); backdrop-filter: blur(10px); }
 .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; padding-top: 17px; border-top: 1px solid #ececef; }
 .form-error { margin-top: 12px; padding: 9px 11px; border-radius: 8px; color: #b91c1c; background: #fff1f2; font-size: 9px; }
 
@@ -433,6 +454,15 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
   .detail-facts { grid-template-columns: 1fr; }
   .action-grid, .form-grid { grid-template-columns: 1fr; }
   .field.full { grid-column: auto; }
+  .modal { padding: 18px; border-radius: 14px; }
+  .modal-header { gap: 12px; }
+  .modal-header h2 { font-size: 18px; }
+  .form-section { margin-top: 20px; padding-top: 16px; }
+  .form-section-heading h3 { font-size: 13px; }
+  .form-section-heading p { font-size: 9px; }
+  .milestone-edit-row { grid-template-columns: 1fr; gap: 9px; padding: 12px 0; }
+  .milestone-edit-title strong { white-space: normal; }
+  .sticky-actions { bottom: -18px; margin-inline: -18px; padding-inline: 18px; }
   .modal.large { padding: 20px; }
   .boss-report { padding: 0; }
   .boss-top { grid-template-columns: 1fr; align-items: start; gap: 12px; padding: 18px 0; }
