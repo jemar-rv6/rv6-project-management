@@ -1,15 +1,19 @@
+import { loadEnvConfig } from "@next/env";
 import { neon } from "@neondatabase/serverless";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-http";
 import { milestones, projectUpdates, projects, risks } from "../src/db/schema";
 import { seedProjects } from "../src/lib/seed-data";
 
+loadEnvConfig(process.cwd());
+
 const connectionString = process.env.DATABASE_URL_UNPOOLED ?? process.env.DATABASE_URL;
 if (!connectionString) throw new Error("Set DATABASE_URL_UNPOOLED or DATABASE_URL before seeding.");
 
 const db = drizzle({ client: neon(connectionString) });
 
-for (const project of seedProjects) {
+async function seed() {
+  for (const project of seedProjects) {
   const [created] = await db
     .insert(projects)
     .values({
@@ -98,6 +102,12 @@ for (const project of seedProjects) {
       type: item.type,
     })));
   }
+  }
+
+  console.log(`Seeded ${seedProjects.length} RV6 projects.`);
 }
 
-console.log(`Seeded ${seedProjects.length} RV6 projects.`);
+seed().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
