@@ -320,6 +320,7 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
 .micro-bar span { display: block; height: 100%; background: var(--project-accent); }
 .milestone-bar { display: block; height: 8px; margin-top: 8px; overflow: hidden; border-radius: 99px; background: #ececef; }
 .milestone-bar span { display: block; height: 100%; min-width: 0; border-radius: inherit; background: var(--project-accent); transition: width .2s ease; }
+.milestone-bar .milestone-progress {margin-top: 0!important}
 .milestone-bar.complete span { background: var(--green); }
 .milestone-bar.in-progress span { background: #f59e0b; }
 .milestone-bar.blocked span { background: #dc2626; }

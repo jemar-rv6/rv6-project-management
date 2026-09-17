@@ -597,7 +597,7 @@ function ProjectDetail({ project, onClose, onEdit }: { project: Project; onClose
                       aria-valuemax={100}
                       aria-valuenow={milestone.progress}
                     >
-                      <span style={{ width: `${milestone.progress}%` }} />
+                      <span className="milestone-progress" style={{ width: `${milestone.progress}%` }} />
                     </span>
                   </span>
                   <span className="milestone-percent">{milestone.progress}%</span>
