@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
   const origin = new URL(request.url).origin;
   return NextResponse.json({
-    openapi: "3.1.0",
+    openapi: "3.0.3",
     info: {
       title: "RV6 Project Management AI Connector",
       version: "1.0.0",
@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     servers: [{ url: origin }],
     security: [{ bearerAuth: [] }],
     components: {
+      schemas: {},
       securitySchemes: {
         bearerAuth: { type: "http", scheme: "bearer" },
       },
