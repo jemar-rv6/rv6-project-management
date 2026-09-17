@@ -590,7 +590,7 @@ function ProjectDetail({ project, onClose, onEdit }: { project: Project; onClose
                     <strong>{milestone.title}</strong>
                     <span>{[milestone.owner, milestone.dueLabel].filter(Boolean).join(" · ") || "Owner to be assigned"}</span>
                     <span
-                      className="milestone-bar"
+                      className={`milestone-bar ${milestone.status}`}
                       role="progressbar"
                       aria-label={`${milestone.title} progress`}
                       aria-valuemin={0}
