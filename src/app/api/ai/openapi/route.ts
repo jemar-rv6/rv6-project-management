@@ -102,11 +102,10 @@ export async function GET(request: Request) {
         delete: {
           operationId: "deleteProject",
           summary: "Delete a project after explicit confirmation",
-          parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-          requestBody: {
-            required: true,
-            content: { "application/json": { schema: { type: "object", required: ["confirmation"], properties: { confirmation: { type: "string", enum: ["DELETE_PROJECT"] } } } } },
-          },
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "confirmation", in: "query", required: true, schema: { type: "string", enum: ["DELETE_PROJECT"] } },
+          ],
           responses: { "200": { description: "Deleted project" } },
         },
       },
@@ -150,11 +149,8 @@ export async function GET(request: Request) {
           parameters: [
             { name: "id", in: "path", required: true, schema: { type: "string" } },
             { name: "milestoneId", in: "path", required: true, schema: { type: "string" } },
+            { name: "confirmation", in: "query", required: true, schema: { type: "string", enum: ["DELETE_MILESTONE"] } },
           ],
-          requestBody: {
-            required: true,
-            content: { "application/json": { schema: { type: "object", required: ["confirmation"], properties: { confirmation: { type: "string", enum: ["DELETE_MILESTONE"] } } } } },
-          },
           responses: { "200": { description: "Deleted milestone" } },
         },
       },

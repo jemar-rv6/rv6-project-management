@@ -31,6 +31,17 @@ const updateSchema = z.object({
 });
 const deleteSchema = z.object({ confirmation: z.literal("DELETE_PROJECT") });
 
+async function hasDeleteConfirmation(request: Request) {
+  if (new URL(request.url).searchParams.get("confirmation") === "DELETE_PROJECT") return true;
+  const headerConfirmation = request.headers.get("x-confirmation");
+  if (headerConfirmation === "DELETE_PROJECT") return true;
+  try {
+    return deleteSchema.safeParse(await request.json()).success;
+  } catch {
+    return false;
+  }
+}
+
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = requireAiConnector(request);
   if (unauthorized) return unauthorized;
@@ -85,8 +96,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
   if (unauthorized) return unauthorized;
   if (!hasDatabase()) return NextResponse.json({ error: "A database is required for AI deletes." }, { status: 503 });
 
-  const input = deleteSchema.safeParse(await request.json());
-  if (!input.success) return NextResponse.json({ error: "Deletion requires confirmation: DELETE_PROJECT." }, { status: 400 });
+  if (!await hasDeleteConfirmation(request)) return NextResponse.json({ error: "Deletion requires confirmation: DELETE_PROJECT." }, { status: 400 });
 
   const { id } = await context.params;
   const [deleted] = await getDb().delete(projects).where(eq(projects.id, id)).returning({ id: projects.id, name: projects.name });
