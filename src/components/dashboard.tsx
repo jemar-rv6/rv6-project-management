@@ -589,7 +589,16 @@ function ProjectDetail({ project, onClose, onEdit }: { project: Project; onClose
                   <span className="milestone-copy">
                     <strong>{milestone.title}</strong>
                     <span>{[milestone.owner, milestone.dueLabel].filter(Boolean).join(" · ") || "Owner to be assigned"}</span>
-                    <span className="micro-bar"><span style={{ width: `${milestone.progress}%` }} /></span>
+                    <span
+                      className="milestone-bar"
+                      role="progressbar"
+                      aria-label={`${milestone.title} progress`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={milestone.progress}
+                    >
+                      <span style={{ width: `${milestone.progress}%` }} />
+                    </span>
                   </span>
                   <span className="milestone-percent">{milestone.progress}%</span>
                 </div>
