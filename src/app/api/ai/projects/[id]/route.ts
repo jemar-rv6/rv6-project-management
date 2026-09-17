@@ -29,6 +29,7 @@ const updateSchema = z.object({
     type: z.enum(["progress", "decision", "blocker", "approval"]),
   }).optional(),
 });
+const deleteSchema = z.object({ confirmation: z.literal("DELETE_PROJECT") });
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const unauthorized = requireAiConnector(request);
@@ -77,4 +78,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     : [];
 
   return NextResponse.json({ ...updated, persisted: true, update: createdUpdate ?? null });
+}
+
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const unauthorized = requireAiConnector(request);
+  if (unauthorized) return unauthorized;
+  if (!hasDatabase()) return NextResponse.json({ error: "A database is required for AI deletes." }, { status: 503 });
+
+  const input = deleteSchema.safeParse(await request.json());
+  if (!input.success) return NextResponse.json({ error: "Deletion requires confirmation: DELETE_PROJECT." }, { status: 400 });
+
+  const { id } = await context.params;
+  const [deleted] = await getDb().delete(projects).where(eq(projects.id, id)).returning({ id: projects.id, name: projects.name });
+  if (!deleted) return NextResponse.json({ error: "Project not found." }, { status: 404 });
+  return NextResponse.json({ deleted: true, project: deleted });
 }

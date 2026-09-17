@@ -45,7 +45,9 @@ The authenticated AI connector is available for GPT Actions or another OpenAPI-c
 - List projects: `GET /api/ai/projects`
 - Create a project: `POST /api/ai/projects`
 - Update a project: `PATCH /api/ai/projects/{id}`
+- Delete a project: `DELETE /api/ai/projects/{id}` with `confirmation: "DELETE_PROJECT"`
 - List or create milestones: `GET|POST /api/ai/projects/{id}/milestones`
+- Delete a milestone: `DELETE /api/ai/projects/{id}/milestones/{milestoneId}` with `confirmation: "DELETE_MILESTONE"`
 
 Set `AI_CONNECTOR_API_KEY` to a long random secret in `.env.local` and in the deployment environment. Configure the ChatGPT action with Bearer authentication using that same key, then import the OpenAPI document from the deployed HTTPS URL. AI writes require a configured Neon database and are rejected in demo mode.
 
