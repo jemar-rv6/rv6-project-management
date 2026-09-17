@@ -7,7 +7,10 @@ import { requireAiConnector } from "@/lib/ai-auth";
 
 const updateSchema = z.object({
   progress: z.number().int().min(0).max(100).optional(),
-  health: z.enum(["on-track", "attention", "blocked", "planning"]).optional(),
+  health: z.preprocess(
+    (value) => typeof value === "string" ? value.toLowerCase().replaceAll(" ", "-") : value,
+    z.enum(["on-track", "attention", "blocked", "planning"]),
+  ).optional(),
   status: z.string().min(2).max(80).optional(),
   priority: z.enum(["Critical", "High", "Medium", "Low"]).optional(),
   phase: z.string().min(2).max(120).optional(),
