@@ -11,7 +11,7 @@ A private, boss-ready project portfolio for RV6 initiatives. It combines the cur
 - Neon Postgres
 - Vercel-ready deployment
 
-Authentication is intentionally deferred. Do not expose a production deployment publicly until access control is added or Vercel deployment protection is enabled.
+The browser dashboard remains unauthenticated for local use. The AI connector routes are protected separately with `AI_CONNECTOR_API_KEY`; do not expose the dashboard publicly until broader access control is added or Vercel deployment protection is enabled.
 
 ## Run locally
 
@@ -36,6 +36,18 @@ pnpm db:seed
 ```
 
 The application reads with the pooled connection. Drizzle migrations should use the direct connection.
+
+## Connect ChatGPT
+
+The authenticated AI connector is available for GPT Actions or another OpenAPI-compatible client:
+
+- OpenAPI document: `/api/ai/openapi`
+- List projects: `GET /api/ai/projects`
+- Create a project: `POST /api/ai/projects`
+- Update a project: `PATCH /api/ai/projects/{id}`
+- List or create milestones: `GET|POST /api/ai/projects/{id}/milestones`
+
+Set `AI_CONNECTOR_API_KEY` to a long random secret in `.env.local` and in the deployment environment. Configure the ChatGPT action with Bearer authentication using that same key, then import the OpenAPI document from the deployed HTTPS URL. AI writes require a configured Neon database and are rejected in demo mode.
 
 ## Deploy to Vercel
 
