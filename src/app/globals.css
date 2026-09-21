@@ -201,11 +201,12 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
 .section-title-row h2, .section-title-row h3 { margin: 0; font-size: 14px; letter-spacing: -.02em; }
 .mini-label { color: #a1a1aa; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .focus-list { display: grid; gap: 2px; margin-top: 14px; }
-.focus-item { display: grid; grid-template-columns: 26px minmax(0, 1fr); align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #efeff1; }
+.focus-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-top: 1px solid #efeff1; }
 .focus-item:first-child { border-top: 0; }
-.focus-number { width: 22px; height: 22px; display: grid; place-items: center; justify-self: center; border-radius: 7px; color: var(--red); background: #fff1f2; font-size: 9px; font-weight: 850; }
+.focus-number { flex: 0 0 22px; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 7px; margin-top: 1px; color: var(--red); background: #fff1f2; font-size: 9px; font-weight: 850; line-height: 1; text-align: center; }
+.focus-item > span:last-child { display: block; flex: 1; min-width: 0; }
 .focus-item strong { display: block; font-size: 11px; line-height: 1.35; }
-.focus-item span { display: block; margin-top: 3px; color: #8a8a92; font-size: 9px; line-height: 1.4; }
+.focus-item > span:last-child > span { display: block; margin-top: 3px; color: #8a8a92; font-size: 9px; line-height: 1.4; }
 
 .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
 .metric-card { min-height: 112px; padding: 17px; background: #fff; border: 1px solid var(--line); border-radius: 14px; }
