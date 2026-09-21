@@ -296,7 +296,7 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
             <FolderKanban /> Projects
           </button>
           <button className="nav-button" type="button" onClick={() => setShowBossView(true)}>
-            <BarChart3 /> Boss report
+            <BarChart3 /> Leadership report
           </button>
         </nav>
 
@@ -341,8 +341,8 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
             <button className="button secondary" type="button" aria-label="Refresh portfolio data" disabled={refreshing} onClick={refreshProjects}>
               <RefreshCw className={refreshing ? "spin" : ""} /> <span>{refreshing ? "Refreshing…" : "Refresh"}</span>
             </button>
-            <button className="button secondary" type="button" aria-label="Open boss view" onClick={() => setShowBossView(true)}>
-              <Printer /> <span>Boss view</span>
+            <button className="button secondary" type="button" aria-label="Open leadership view" onClick={() => setShowBossView(true)}>
+              <Printer /> <span>Leadership view</span>
             </button>
             <button className="button primary" type="button" aria-label="Add project" onClick={() => setShowAdd(true)}>
               <Plus /> <span>Add project</span>
@@ -829,8 +829,8 @@ function BossReport({ projects, overall, asOf, onClose }: { projects: Project[];
     <div className="modal-backdrop">
       <div className="modal large">
         <div className="modal-header">
-          <div><h2>Boss-ready portfolio brief</h2><p>Prepared from the latest reviewed HQ and implementation-task context.</p></div>
-          <button className="close-button" type="button" onClick={onClose} aria-label="Close boss report"><X /></button>
+          <div><h2>Leadership portfolio brief</h2><p>Prepared from the latest reviewed HQ and implementation-task context.</p></div>
+          <button className="close-button" type="button" onClick={onClose} aria-label="Close leadership report"><X /></button>
         </div>
         <div className="boss-report">
           <div className="boss-top">
