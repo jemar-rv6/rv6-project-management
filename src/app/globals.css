@@ -181,10 +181,11 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
   border-radius: 18px;
   box-shadow: var(--shadow);
 }
+.portfolio-hero { display: flex; flex-direction: column; justify-content: center; }
 .portfolio-kicker { color: #d4d4d8; font-size: 10px; font-weight: 800; letter-spacing: .15em; }
 .portfolio-card h2 { max-width: 590px; margin: 12px 0 10px; font-size: clamp(24px, 2.5vw, 36px); line-height: 1.1; letter-spacing: -.035em; }
 .portfolio-card p { max-width: 650px; margin: 0; color: #b5b5bb; font-size: 12px; line-height: 1.7; }
-.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 100px; }
 .hero-badge { display: inline-flex; gap: 7px; align-items: center; padding: 7px 10px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: #d4d4d8; background: rgba(255,255,255,.05); font-size: 10px; }
 .hero-badge strong { color: #fff; }
 .progress-orbit { align-self: center; justify-self: center; position: relative; width: 152px; height: 152px; display: grid; place-items: center; }

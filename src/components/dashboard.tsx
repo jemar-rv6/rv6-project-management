@@ -364,7 +364,7 @@ export function Dashboard({ snapshot }: { snapshot: PortfolioSnapshot }) {
 
           <section className="hero-grid">
             <div className="portfolio-card">
-              <div>
+              <div className="portfolio-info">
                 <div className="portfolio-kicker">PORTFOLIO STATUS · {projects.length} ACTIVE INITIATIVES</div>
                 <h2>The work is moving. Approval and source-data dependencies are now the main constraint.</h2>
                 <p>
