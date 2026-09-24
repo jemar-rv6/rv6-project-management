@@ -181,7 +181,7 @@ h1 { margin: 6px 0 4px; font-size: clamp(28px, 3vw, 42px); line-height: 1.05; le
   border-radius: 18px;
   box-shadow: var(--shadow);
 }
-.portfolio-hero { display: flex; flex-direction: column; justify-content: center; }
+.portfolio-info { display: flex; flex-direction: column; justify-content: center; }
 .portfolio-kicker { color: #d4d4d8; font-size: 10px; font-weight: 800; letter-spacing: .15em; }
 .portfolio-card h2 { max-width: 590px; margin: 12px 0 10px; font-size: clamp(24px, 2.5vw, 36px); line-height: 1.1; letter-spacing: -.035em; }
 .portfolio-card p { max-width: 650px; margin: 0; color: #b5b5bb; font-size: 12px; line-height: 1.7; }
